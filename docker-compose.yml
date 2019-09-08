@@ -1,0 +1,38 @@
+version: '3.1'
+
+services:
+
+  php:
+    container_name: ${APP_NAME}-php
+    image: laric/php
+    restart: always
+    links:
+      - postgres
+    volumes:
+      - ./:/app
+
+  postgres:
+    container_name: ${APP_NAME}-postgres
+    image: postgres
+    restart: always
+    ports:
+      - ${PG_EXPOSE_PORT}:5432
+    environment:
+      POSTGRES_DB: ${PG_DATABASE}
+      POSTGRES_USER: ${PG_USERNAME}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    volumes:
+      - ./docker/pg-data:/var/lib/postgresql/data
+
+  nginx:
+    container_name: ${APP_NAME}-nginx
+    image: nginx:alpine
+    restart: always
+    links:
+      - php
+    ports:
+      - ${APP_PORT}:8000
+    volumes:
+      - ./:/app
+      - ./docker/nginx-conf:/etc/nginx/conf.d
+      - ./docker/certs:/etc/nginx/certs

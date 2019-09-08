@@ -1,0 +1,34 @@
+# server {
+#     listen          8000;
+#     server_name     app;
+#     root            /app/public;
+#     index           index.html index.htm index.php;
+
+#     ssl                       on;
+#     ssl_prefer_server_ciphers on;
+#     ssl_certificate           /etc/nginx/certs/app.pem;
+#     ssl_certificate_key       /etc/nginx/certs/app.key;
+#     ssl_session_timeout       5m;
+#     ssl_protocols             SSLv2 SSLv3 TLSv1;
+#     ssl_ciphers               ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+
+#     access_log  /var/log/nginx/host.access.log  main;
+
+#     location / {
+#         try_files $uri $uri/ /index.php?$query_string;
+#     }
+
+#     location = /favicon.ico { access_log off; log_not_found off; }
+#     location = /robots.txt  { access_log off; log_not_found off; }
+
+#     location ~ \.php$ {
+#         fastcgi_pass   php:9000;
+#         fastcgi_index  index.php;
+#         fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+#         include        fastcgi_params;
+#     }
+
+#     location ~ /\.ht {
+#         deny all;
+#     }
+# }
