@@ -15,7 +15,7 @@ class TcpServer
 
   public function start()
   {
-    $server = new Server("127.0.0.1", 9503);
+    $server = new Server("127.0.0.1", 9502);
 
     // 建立连接时输出
     $server->on('connect', function ($serv, $fd){

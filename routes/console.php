@@ -28,11 +28,18 @@ Artisan::command('tcp:serve', function () {
   $server->start();
 });
 
-Artisan::command('plc:test', function () {
-  $client = new Plc;
+Artisan::command('plc', function () {
+  $plc = new Plc;
+  $plc->connect();
 
-  echo $client->read('D2000');
-  echo $client->read('D3000');
-  echo $client->write('D2000', 1000);
-  echo $client->write('D3000', 2000);
+  function output ($res) {
+    echo $res . "\n";
+  }
+
+  output($plc->read('000010'));
+  output($plc->read('002000'));
+  output($plc->write('002000', '0101'));
+  output($plc->read('002000'));
+  output($plc->write('002000', '2222'));
+  output($plc->read('002000'));
 });

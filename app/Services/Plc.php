@@ -19,22 +19,34 @@ class Plc
    * 0018 请求数据长度
    * 0010 CPU 监视定时器
    */
-  private $messageHead = "500000FF03FF0000180010";
+  private $messageHead = "500000FF03FF00";
 
   public function __construct()
   {
-    $this->client = new Client(SWOOLE_SOCK_TCP);
-    if (!$this->client->connect('127.0.0.1', 9503, -1)) {
-      echo 'fail to connect client';
-    }
+  }
 
-    echo "success to connect plc\n";
+  public function connect()
+  {
+    $this->client = new Client(SWOOLE_SOCK_TCP);
+
+    if ($this->client->connect('192.168.3.39', 8000, -1)) {
+      echo "success to connect plc\n";
+
+      return true;
+    } else {
+      echo 'fail to connect client';
+
+      return false;
+    }
   }
 
   public function read($address)
   {
-    $message = $this->messageHead . "04010000D*" . $address . "00000001";
-    $this->client->send("read: $message");
+    $code = "001004010000D*" . $address . "0001";
+
+    $code = "0018" . $code;
+    $message = $this->messageHead . $code;
+    $this->client->send($message);
     $result = $this->client->recv();
 
     return $result;
@@ -42,10 +54,12 @@ class Plc
 
   public function write($address, $data)
   {
-    $message = $this->messageHead . "14010001D*" . $address . "0001" . "$data";
+    $code = "001014010000D*" . $address . "0001" . $data;
+    $code = "001C" . $code;
 
-    $this->client->send("write: $message");
+    $message = $this->messageHead . $code;
 
+    $this->client->send($message);
     return $this->client->recv();
   }
 
@@ -55,11 +69,7 @@ class Plc
       $this->heartbeat = 0;
     }
 
-    DB::update("UPDATE plc_connections set heartbeat = ? where id = ?", [$this->heartbeat++, $id]);
-
-    // DB::table('plc_connections')->where('id', $id)->update([
-    //   'heartbeat' => $this->heartbeat++
-    // ]);
+    DB::update("UPDATE plcs set heartbeat = ? where id = ?", [$this->heartbeat++, $id]);
   }
 
   // private function writeMessageEncode($address)

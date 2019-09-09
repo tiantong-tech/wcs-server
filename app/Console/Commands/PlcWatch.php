@@ -21,6 +21,7 @@ class PlcWatch extends _Command
   public function handle()
   {
     $plc = $this->plc;
+    $plc->connect();
     $i = 0;
     while (++$i) {
       echo "round $i \n";
@@ -40,14 +41,22 @@ class PlcWatch extends _Command
 
   private function handleCheck()
   {
-    $this->plc->read('D3000');
+    $this->plc->read('003000');
+    $this->plc->read('003000');
+    $this->plc->read('003000');
+    $this->plc->read('003000');
+    $this->plc->read('003000');
+    $this->plc->read('003000');
+    $this->plc->read('003000');
+    $this->plc->read('003000');
+    $this->plc->read('003000');
     $this->plc->recordHeartbeat(1);
     echo "1. 提升机状态记录完毕\n";
   }
 
   private function handleHeartbeat()
   {
-    $this->plc->write('D2001', 2000);
+    $this->plc->write('002000', 2000);
 
     echo "2. 心跳处理完毕\n";
   }
