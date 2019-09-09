@@ -10,9 +10,7 @@ class DatabaseSeeder extends Seeder
 		$this->call(UserSeeder::class);
 
 		if (env('APP_ENV') !== 'local') return;
-
+		$this->call(PlcSeeder::class);
 		// 本地测试数据
-    $this->call(SaleTrackSeeder::class);
-    $this->call(SaleProjectSeeder::class);
 	}
 }

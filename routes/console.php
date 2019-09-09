@@ -28,33 +28,11 @@ Artisan::command('tcp:serve', function () {
   $server->start();
 });
 
-Artisan::command('plc:handle', function () {
+Artisan::command('plc:test', function () {
   $client = new Plc;
 
   echo $client->read('D2000');
   echo $client->read('D3000');
   echo $client->write('D2000', 1000);
   echo $client->write('D3000', 2000);
-});
-
-Artisan::command('plc:watch', function () {
-  $plc = new Plc;
-  $i = 1;
-  while (++$i) {
-    echo "round $i \n";
-
-    if ($i % 3 == 0) {
-      echo $plc->write('D2001', 2000);
-
-      echo "心跳处理完毕\n";
-    }
-    if ($i % 1 == 0) {
-      echo $plc->read('D3000');
-
-      echo "提升机运行状态正常\n";
-    }
-
-    sleep(1);
-    echo "\n\n";
-  }
 });
