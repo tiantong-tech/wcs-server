@@ -11,9 +11,17 @@ class Hoisters extends Migration
     Schema::create('hoisters', function($table) {
       $table->increments('id');
       $table->integer('plc_id');
-      $table->string('shuttle');
-      $table->integer('heartbeat');
+
+      $table->integer('log_interval');
+      $table->integer('heartbeat_interval');
+
+      $table->string('shuttle_address');
       $table->integer('heartbeat_address');
+      $table->integer('lift_position_address');
+
+      // state
+      $table->string('shuttle');
+      $table->string('lift_position');
     });
   }
 
