@@ -2,7 +2,7 @@
 
 use Illuminate\Foundation\Inspiring;
 use App\Swoole\TcpServer;
-use App\Services\Plc;
+use App\Devices\Plc;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,8 +29,7 @@ Artisan::command('tcp:serve', function () {
 });
 
 Artisan::command('plc', function () {
-  $plc = new Plc;
-  $plc->connect();
+  $plc = new Plc(1);
 
   function output ($res) {
     echo $res . "\n";
