@@ -29,7 +29,7 @@ class Plc
   {
     $this->client = new Client(SWOOLE_SOCK_TCP);
 
-    if ($this->client->connect('192.168.3.39', 8000, -1)) {
+    if ($this->client->connect('127.0.0.1', 9502, -1)) {
       echo "success to connect plc\n";
 
       return true;

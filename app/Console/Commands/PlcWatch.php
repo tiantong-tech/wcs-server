@@ -34,7 +34,7 @@ class PlcWatch extends _Command
         $this->handleHeartbeat();
       }
 
-      sleep(1);
+      // sleep(1);
       echo "\n\n";
     }
   }
