@@ -2,7 +2,7 @@
 
 use Illuminate\Foundation\Inspiring;
 use App\Swoole\TcpServer;
-use App\Devices\Plc;
+use App\Plc\Client as Plc;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,16 +29,20 @@ Artisan::command('tcp:serve', function () {
 });
 
 Artisan::command('plc', function () {
-  $plc = new Plc(1);
+  $plc = new Plc('localhost', '9502');
 
   function output ($res) {
     echo $res . "\n";
   }
 
-  output($plc->read('000010'));
-  output($plc->read('002000'));
-  output($plc->write('002000', '0101'));
-  output($plc->read('002000'));
-  output($plc->write('002000', '2222'));
-  output($plc->read('002000'));
+  echo $plc->readcd('2000') . "\n";
+  echo $plc->readcd('002000') . "\n";
+  echo $plc->writecd('2000', '0001');
+
+});
+
+Artisan::command('get', function() {
+  $str = "asdf";
+
+  dd (substr($str, 22) ?? '');
 });
