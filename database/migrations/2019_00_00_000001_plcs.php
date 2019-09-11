@@ -12,7 +12,7 @@ class Plcs extends Migration
 			$table->increments('id');
 			$table->string('name');
 			$table->string('host');
-			$table->string('port');
+			$table->integer('port');
 			$table->string('comment')->default('');
 			$table->integer('heartbeat')->default(0);
 			$table->integer('heartbeat_rate')->default(3);

@@ -2,61 +2,63 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Plc;
+use App\Plc\Client as Plc;
 
 class PlcWatch extends _Command
 {
   protected $signature = 'plc:watch';
 
-  protected $plc;
-
   protected $description = 'Watching plc';
 
-  public function __construct()
-  {
-    $this->plc = new Plc;
-    parent::__construct();
-  }
+  protected $plc;
 
   public function handle()
   {
-    $plc = $this->plc;
-    $plc->connect();
+    $this->plc = new Plc('localhost', 9502);
+    $this->plc->connect();
     $i = 0;
-    while (++$i) {
-      echo "round $i \n";
+    $self = $this;
+    // $this->plc->try(function () {
 
-      if ($i % 1 == 0) {
-        $this->handleCheck();
+    // });
+    // $this->plc->while(function () {
+
+    // });
+
+    while(++$i) {
+      echo "Round $i\n";
+      try {
+        if ($i % 1 == 0) {
+            $this->handleCheck();
+          }
+          if ($i % 3 == 0) {
+            $this->handleHeartbeat($i);
+          }
+          echo "\n\n";
+      } catch (\Exception $e) {
+        $this->plc->reconnect();
       }
-
-      if ($i % 3 == 0) {
-        $this->handleHeartbeat();
-      }
-
-      // sleep(1);
-      echo "\n\n";
+      sleep(1);
     }
   }
 
   private function handleCheck()
   {
-    $this->plc->read('003000');
-    $this->plc->read('003000');
-    $this->plc->read('003000');
-    $this->plc->read('003000');
-    $this->plc->read('003000');
-    $this->plc->read('003000');
-    $this->plc->read('003000');
-    $this->plc->read('003000');
-    $this->plc->read('003000');
-    $this->plc->recordHeartbeat(1);
+    $this->plc->creadD('003000');
+    $this->plc->creadD('003000');
+    $this->plc->creadD('003000');
+    $this->plc->creadD('003000');
+    $this->plc->creadD('003000');
+    $this->plc->creadD('003000');
+    $this->plc->creadD('003000');
+    $this->plc->creadD('003000');
+    $this->plc->creadD('003000');
     echo "1. 提升机状态记录完毕\n";
   }
 
-  private function handleHeartbeat()
+  private function handleHeartbeat($i)
   {
-    $this->plc->write('002000', 2000);
+    $this->plc->cwriteD('002000', $i);
 
     echo "2. 心跳处理完毕\n";
   }

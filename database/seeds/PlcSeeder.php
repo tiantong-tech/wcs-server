@@ -11,7 +11,7 @@ class PlcSeeder extends Seeder
 		DB::table('plcs')->insert([
 			'name' => 'test',
 			'host' => '127.0.0.1',
-			'port' => '9502',
+			'port' => 9520,
 			'comment' => '测试PLC',
 			'heartbeat_rate' => '2',
 			'heartbeat' => 0,

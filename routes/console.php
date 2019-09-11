@@ -29,15 +29,15 @@ Artisan::command('tcp:serve', function () {
 });
 
 Artisan::command('plc', function () {
-  $plc = new Plc('localhost', '9502');
+  $plc = new Plc('127.0.0.1', 9502);
 
   function output ($res) {
     echo $res . "\n";
   }
 
-  echo $plc->readcd('2000') . "\n";
-  echo $plc->readcd('002000') . "\n";
-  echo $plc->writecd('2000', '0001');
+  output($plc->creadD('2000'));
+  output($plc->creadD('002000'));
+  output($plc->cwriteD('2000', '0001'));
 
 });
 

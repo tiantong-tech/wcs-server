@@ -4,7 +4,7 @@ namespace App\Plc;
 
 use Swoole\Client as Cli;
 
-class Client
+class Client implements  ClientContact
 {
   protected $host;
 
@@ -14,34 +14,81 @@ class Client
 
   protected $client;
 
-  public function __construct($host, $port)
-  {
-    $client = new Cli(SWOOLE_SOCK_TCP);
-    if (!$client->connect($host, $port)) {
-      throw new PlcUnreachableException;
-    }
+  /**
+   * tcp 连接是否建立
+   */
+  protected $isConnected = false;
 
+  protected $autoconnect = true;
+
+  public function __construct(string $host, int $port)
+  {
+    $this->client = new Cli(SWOOLE_SOCK_TCP);
     $this->host = $host;
     $this->port = $port;
-    $this->client = $client;
+  }
+
+  public function connect()
+  {
+    try {
+      $this->clientConnect();
+      $this->test();
+      return true;
+    } catch (\Exception $e) {
+      $this->client->close();
+      return false;
+    }
+  }
+
+  public function reconnect()
+  {
+    echo "重连中";
+    while (1) {
+      try {
+        echo "...";
+        $this->connectOrFail();
+        echo "\n连接已恢复\n";
+        return;
+      } catch (\Exception $e) {
+        sleep(1);
+      }
+    }
+  }
+
+  public function connectOrFail()
+  {
+    if (!$this->connect()) {
+      throw new PlcConnectionException();
+    }
+  }
+
+  public function test()
+  {
+    return $this->creadD('2000');
+  }
+
+  public function try($callback)
+  {
+    try {
+      $callback();
+    } catch (\Exception $e) {
+      
+    }
+  }
+
+  public function clientConnect()
+  {
+    return $this->client->connect($this->host, $this->port, 0.5, 0);
   }
 
   public function send($message)
   {
     $this->client->send($message);
-
     $result = $this->client->recv();
-    // return $this->decodeMessage($result);
-
-    return $result;
+    return $this->decodeMessage($result);
   }
 
-  public function recv()
-  {
-    $message = $this->client->recv();
-  }
-
-  public function readcd($address, $length = 1)
+  public function creadD($address, $length = 1)
   {
     $address = str_pad($address, 6, '0', STR_PAD_LEFT);
     $length = $this->transLength($length);
@@ -49,7 +96,7 @@ class Client
     return $this->send($this->generateMessage($body));
   }
 
-  public function writecd($address, $data, $length = 1)
+  public function cwriteD($address, int $data, $length = 1)
   {
     $address = str_pad($address, 6, '0', STR_PAD_LEFT);
     $length = $this->transLength($length);
@@ -80,9 +127,10 @@ class Client
 
   protected function decodeMessage($message)
   {
-    $status = substr($message, 19, 4);
+    $status = substr($message, 18, 4);
+
     if ($status !== '0000') {
-      throw new PlcResponseException;
+      throw new PlcResponseException($status);
     }
 
     return strlen($message) > 22 ? substr($message, 22) : '';
