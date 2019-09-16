@@ -2,10 +2,12 @@
 
 namespace App\Plc;
 
+// 负责通信功能
 interface ClientContact
 {
   /**
-   * 1. 执行 tcp client 连接，连接失败直接 close
+   * 执行 tcp client 连接并测试
+   * 连接失败直接关闭
    * @return boolean
    */
   public function connect();
@@ -18,7 +20,7 @@ interface ClientContact
 
   public function send(string $message);
 
-  public function creadD($address);
+  public function readwd($address);
 
-  public function cwriteD($address, int $data);
+  public function writewd($address, int $data);
 }

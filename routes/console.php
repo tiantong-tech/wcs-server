@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use App\Swoole\TcpServer;
 use App\Plc\Client as Plc;
+use Illuminate\Support\Facades\Redis;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,19 +31,14 @@ Artisan::command('tcp:serve', function () {
 
 Artisan::command('plc', function () {
   $plc = new Plc('127.0.0.1', 9502);
+  $plc->connect();
 
   function output ($res) {
     echo $res . "\n";
   }
 
-  output($plc->creadD('2000'));
-  output($plc->creadD('002000'));
-  output($plc->cwriteD('2000', '0001'));
+  output($plc->readwd('2000'));
+  output($plc->readwd('002000'));
+  output($plc->writewd('2000', '0001'));
 
-});
-
-Artisan::command('get', function() {
-  $str = "asdf";
-
-  dd (substr($str, 22) ?? '');
 });

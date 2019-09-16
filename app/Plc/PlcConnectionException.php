@@ -2,7 +2,7 @@
 
 namespace App\Plc;
 
-class PlcConnectionException extends \Exception
+class PlcConnectionException extends PlcException
 {
 
 }

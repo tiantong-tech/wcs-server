@@ -14,13 +14,6 @@ class Client implements  ClientContact
 
   protected $client;
 
-  /**
-   * tcp 连接是否建立
-   */
-  protected $isConnected = false;
-
-  protected $autoconnect = true;
-
   public function __construct(string $host, int $port)
   {
     $this->client = new Cli(SWOOLE_SOCK_TCP);
@@ -49,7 +42,7 @@ class Client implements  ClientContact
         $this->connectOrFail();
         echo "\n连接已恢复\n";
         return;
-      } catch (\Exception $e) {
+      } catch (PlcConnectionException $e) {
         sleep(1);
       }
     }
@@ -64,15 +57,16 @@ class Client implements  ClientContact
 
   public function test()
   {
-    return $this->creadD('2000');
+    return $this->readwd('2000');
   }
 
   public function try($callback)
   {
     try {
-      $callback();
-    } catch (\Exception $e) {
-      
+      $callback($this);
+    } catch (PlcException $e) {
+      $this->reconnect();
+      $this->try($callback);
     }
   }
 
@@ -83,32 +77,38 @@ class Client implements  ClientContact
 
   public function send($message)
   {
-    $this->client->send($message);
-    $result = $this->client->recv();
+    try {
+      $this->client->send($message);
+      $result = $this->client->recv();
+    } catch (\Exception $e) {
+      throw new PlcRequestException;
+    }
+
     return $this->decodeMessage($result);
   }
 
-  public function creadD($address, $length = 1)
+  public function readwd($address, $length = 1)
   {
     $address = str_pad($address, 6, '0', STR_PAD_LEFT);
-    $length = $this->transLength($length);
+    $length = $this->decToHex($length, 4);
     $body = '04010000D*' . $address . $length;
     return $this->send($this->generateMessage($body));
   }
 
-  public function cwriteD($address, int $data, $length = 1)
+  public function writewd($address, int $data, $length = 1)
   {
     $address = str_pad($address, 6, '0', STR_PAD_LEFT);
-    $length = $this->transLength($length);
+    $data = $this->decToHex($data, $length * 4);
+    $length = $this->decToHex($length, 4);
     $body = '14010000D*' . $address . $length . $data;
     return $this->send($this->generateMessage($body));
   }
 
-  public function generateMessage($body)
+  protected function generateMessage($body)
   {
     // 0010 为 CPU监视定时器
     $body = '0010' . $body;
-    $length = $this->transLength(strlen($body));
+    $length = $this->decToHex(strlen($body), 4);
     /**
      * @prefix 500000FF03FF00
      * 5000 副头部
@@ -136,8 +136,8 @@ class Client implements  ClientContact
     return strlen($message) > 22 ? substr($message, 22) : '';
   }
 
-  public function transLength($length)
+  protected function decToHex($num, $length)
   {
-    return str_pad(strtoupper(dechex($length)), 4, '0', STR_PAD_LEFT);
+    return str_pad(strtoupper(dechex($num)), $length, '0', STR_PAD_LEFT);
   }
 }

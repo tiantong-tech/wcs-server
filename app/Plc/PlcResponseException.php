@@ -2,7 +2,7 @@
 
 namespace App\Plc;
 
-class PlcResponseException extends \Exception
+class PlcResponseException extends PlcException
 {
   protected $status;
 

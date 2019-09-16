@@ -6,14 +6,14 @@ return [
   'key' => env('APP_KEY'),
   'cipher' => 'AES-256-CBC',
 
-  'debug' => env('APP_DEBUG', false),
-  'env' => env('APP_ENV', 'production'),
+  'debug' => env('APP_DEBUG'),
+  'env' => env('APP_ENV'),
 
   'url' => env('APP_URL', 'http://localhost'),
   'asset_url' => env('ASSET_URL', null),
 
   'locale' => 'en',
-  'timezone' => env('timezone', 'Asia/Shanghai'),
+  'timezone' => env('APP_TIMEZONE', 'Asia/Shanghai'),
   'fallback_locale' => 'en',
   'faker_locale' => 'en_US',
 
@@ -26,6 +26,7 @@ return [
     Illuminate\Database\DatabaseServiceProvider::class,
     Illuminate\Filesystem\FilesystemServiceProvider::class,
     Illuminate\Foundation\Providers\ConsoleSupportServiceProvider::class,
+    Illuminate\Redis\RedisServiceProvider::class,
     /**
      * @todo
      */
@@ -58,6 +59,7 @@ return [
     'Artisan' => Illuminate\Support\Facades\Artisan::class,
     'Request' => Illuminate\Support\Facades\Request::class,
     'Validator' => Illuminate\Support\Facades\Validator::class,
+    'IRedis' => Illuminate\Support\Facades\Redis::class,
 
     /**
      * @Services
