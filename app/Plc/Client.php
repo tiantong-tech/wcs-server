@@ -70,6 +70,15 @@ class Client implements  ClientContact
     }
   }
 
+  public function tryOnce($callback)
+  {
+    try {
+      $callback($this);
+    } catch (PlcException $e) {
+      $this->reconnect();
+    }
+  }
+
   public function clientConnect()
   {
     return $this->client->connect($this->host, $this->port, 0.5, 0);

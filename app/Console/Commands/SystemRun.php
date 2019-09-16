@@ -6,11 +6,11 @@ use App\System\Manager;
 use App\Plc\PlcConnectionException;
 use App\Plc\PlcResponseException;
 
-class PlcWatch extends _Command
+class SystemRun extends _Command
 {
-  protected $signature = 'plc:watch';
+  protected $signature = 'system:run';
 
-  protected $description = 'Watching plc';
+  protected $description = 'run system';
 
   public function handle(Manager $manager)
   {
