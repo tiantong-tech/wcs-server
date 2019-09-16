@@ -4,10 +4,12 @@ namespace App\Models;
 
 class Hoister extends _Model
 {
-  protected $table = 'hoisters';
+  public $table = 'hoisters';
+
+  public $primaryKey = 'id';
 
   public function floors()
   {
-    return $this->hasMany('hoister_floors', 'hoisters.id', 'hoister_floors.hoister_id');
+    return $this->hasMany(HoisterFloor::class, 'hoister_id', 'id');
   }
 }

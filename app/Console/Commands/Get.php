@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use IRedis as Redis;
+use App\Models\Hoister;
 
 class Get extends _Command
 {
@@ -12,10 +13,9 @@ class Get extends _Command
 
   public function handle()
   {
-    Redis::set('test', 100);
+    Redis::set('test', true);
 
-    echo Redis::get('test');
-
+    echo getType(Redis::get('test'));
     echo "\n";
   }
 }

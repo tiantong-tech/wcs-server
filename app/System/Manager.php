@@ -7,21 +7,27 @@ use App\Plc\Client as Plc;
 
 class Manager
 {
+  protected $hoisters;
+
   protected $hoister;
-
-  public function __construct()
-  {
-
-  }
 
   public function run()
   {
-    $this->handle();
+    while (1) {
+      $this->handle();
+      sleep(4);
+    }
   }
 
-  public function record()
+  public function keepalive()
   {
+    Redis::set('system.manager.keepalive', true);
+    Redis::expire('system.manager.keepalive', 5);
+  }
 
+  public function isAlive()
+  {
+    return Redis::get('system.manager.keepalive') ? true : false;
   }
 
   public function handle()
@@ -42,11 +48,6 @@ class Manager
       });
       sleep(1);
     }
-  }
-
-  public function status()
-  {
-
   }
 
   protected function handleCheck(Plc $plc)

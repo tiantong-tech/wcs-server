@@ -30,7 +30,7 @@ class PlcSeeder extends Seeder
     $floors = [];
     for ($i = 0; $i < 5; $i++) {
       $floors[] = [
-        'key' => $i++,
+        'key' => $i + 1,
         'hoister_id' => 1,
         'gate1_auto_address' => '003001',
         'gate1_alarm_address' => '003002',
