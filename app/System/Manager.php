@@ -21,6 +21,7 @@ class Manager implements ManagerContact
     $this->keepaliveInterval = 5;
     $this->watchInterval = 5;
     $this->maxTime = 10000;
+    $hoister = new HoisterSystem(1);
   }
 
   public function keepalive()

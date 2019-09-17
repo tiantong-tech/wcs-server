@@ -2,9 +2,9 @@
 
 namespace App\Plc;
 
-use Swoole\Client as Cli;
+use Swoole\Client;
 
-class Client implements  ClientContact
+class PlcClient implements  ClientContact
 {
   protected $host;
 
@@ -18,7 +18,7 @@ class Client implements  ClientContact
 
   public function __construct(string $host, int $port)
   {
-    $this->tcpClient = new Cli(SWOOLE_SOCK_TCP);
+    $this->tcpClient = new Client(SWOOLE_SOCK_TCP);
     $this->host = $host;
     $this->port = $port;
   }

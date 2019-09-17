@@ -21,8 +21,8 @@ class Hoisters extends Migration
       $table->string('lift_position_address');
 
       // state
-      $table->string('shuttle')->default(0);
-      $table->string('lift_position')->default(0);
+      // $table->string('shuttle')->default(0);
+      // $table->string('lift_position')->default(0);
     });
   }
 
