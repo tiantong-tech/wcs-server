@@ -6,5 +6,7 @@ interface ManagerContact
 {
   public function run();
 
-  public function isAlive();
+  public function isAlive(): boolean;
+
+  public function registerTask(\Closure $callback, int $interval);
 }

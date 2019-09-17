@@ -12,23 +12,37 @@ class Client implements  ClientContact
 
   protected $protocol;
 
-  protected $client;
+  protected $tcpClient;
+
+  protected $isTcpClientConnected;
 
   public function __construct(string $host, int $port)
   {
-    $this->client = new Cli(SWOOLE_SOCK_TCP);
+    $this->tcpClient = new Cli(SWOOLE_SOCK_TCP);
     $this->host = $host;
     $this->port = $port;
   }
 
+  /**
+   * 1. 建立 Tcp Client 连接
+   * 2. 执行 PLC test
+   * 
+   * @return Boolean
+   */
   public function connect()
   {
+    if ($this->isTcpClientConnected) {
+      $this->tcpClient->close();
+    }
+    $this->tcpClient->connect($this->host, $this->port, 0.5, 0);
+    $this->isTcpClientConnected = true;
+
     try {
-      $this->clientConnect();
       $this->test();
+
       return true;
-    } catch (\Exception $e) {
-      $this->client->close();
+    } catch (PlcConnectionException $e) {
+
       return false;
     }
   }
@@ -55,11 +69,6 @@ class Client implements  ClientContact
     }
   }
 
-  public function test()
-  {
-    return $this->readwd('2000');
-  }
-
   public function try($callback)
   {
     try {
@@ -70,25 +79,38 @@ class Client implements  ClientContact
     }
   }
 
-  public function tryOnce($callback)
+  public function tryOnce(\Closure $callback)
   {
     try {
       $callback($this);
     } catch (PlcException $e) {
-      $this->reconnect();
+      echo "正在尝试重连...\n";
+      if ($this->connect()) {
+        echo "已连接\n";
+        $callback($this);
+      } else {
+        echo "重连失败\n";
+      }
     }
   }
 
-  public function clientConnect()
+  /**
+   * @depend 连接成功后 read 必定成功
+   */
+  public function test()
   {
-    return $this->client->connect($this->host, $this->port, 0.5, 0);
+    try {
+      $this->readwd('002000');
+    } catch (PlcException $e) {
+      throw new PlcConnectionException;
+    }
   }
 
   public function send($message)
   {
     try {
-      $this->client->send($message);
-      $result = $this->client->recv();
+      $this->tcpClient->send($message);
+      $result = $this->tcpClient->recv();
     } catch (\Exception $e) {
       throw new PlcRequestException;
     }
@@ -96,22 +118,28 @@ class Client implements  ClientContact
     return $this->decodeMessage($result);
   }
 
-  public function readwd($address, $length = 1)
+  public function readwd(string $address, int $length = 1)
   {
     $address = str_pad($address, 6, '0', STR_PAD_LEFT);
     $length = $this->decToHex($length, 4);
     $body = '04010000D*' . $address . $length;
+
     return $this->send($this->generateMessage($body));
   }
 
-  public function writewd($address, int $data, $length = 1)
+  public function writewd(string $address, int $data, int $length = 1)
   {
     $address = str_pad($address, 6, '0', STR_PAD_LEFT);
     $data = $this->decToHex($data, $length * 4);
     $length = $this->decToHex($length, 4);
     $body = '14010000D*' . $address . $length . $data;
+
     return $this->send($this->generateMessage($body));
   }
+
+  /**
+   * sub methods
+   */
 
   protected function generateMessage($body)
   {
@@ -129,7 +157,6 @@ class Client implements  ClientContact
      * 0010 CPU 监视定时器
      */
     $message = '500000FF03FF00' . $length . $body;
-    // $this->client->send($message);
 
     return $message;
   }
