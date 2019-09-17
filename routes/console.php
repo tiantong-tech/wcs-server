@@ -30,15 +30,23 @@ Artisan::command('tcp:serve', function () {
 });
 
 Artisan::command('plc', function () {
-  $plc = new Plc('127.0.0.1', 9502);
+  $plc = new Plc('192.168.3.39', 8000);
   $plc->connect();
 
   function output ($res) {
     echo $res . "\n";
   }
 
-  output($plc->readwd('2000'));
-  output($plc->readwd('002000'));
-  output($plc->writewd('2000', '0001'));
+  $plc->writewd('002200', 100000, 2);
+});
 
+Artisan::command('get', function () {
+  Redis::set('test', 1);
+  Redis::expire('test', 10);
+
+  while(1) {
+    echo Redis::get('test');
+
+    sleep(1);
+  }
 });

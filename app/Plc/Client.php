@@ -26,7 +26,7 @@ class Client implements  ClientContact
   /**
    * 1. 建立 Tcp Client 连接
    * 2. 执行 PLC test
-   * 
+   *
    * @return Boolean
    */
   public function connect()
@@ -34,8 +34,13 @@ class Client implements  ClientContact
     if ($this->isTcpClientConnected) {
       $this->tcpClient->close();
     }
-    $this->tcpClient->connect($this->host, $this->port, 0.5, 0);
-    $this->isTcpClientConnected = true;
+
+    try {
+      $this->tcpClient->connect($this->host, $this->port, 0.5, 0);
+      $this->isTcpClientConnected = true;
+    } catch (\Exception $e) {
+      $this->isTcpClientConnected = false;
+    }
 
     try {
       $this->test();
@@ -108,10 +113,15 @@ class Client implements  ClientContact
 
   public function send($message)
   {
+    $result = '';
     try {
       $this->tcpClient->send($message);
       $result = $this->tcpClient->recv();
     } catch (\Exception $e) {
+      echo "指令传送失败\n";
+      echo "指令：$message\n";
+      echo "响应：$result\n";
+
       throw new PlcRequestException;
     }
 
@@ -131,9 +141,9 @@ class Client implements  ClientContact
   {
     $address = str_pad($address, 6, '0', STR_PAD_LEFT);
     $data = $this->decToHex($data, $length * 4);
+    $this->swapDec($data);
     $length = $this->decToHex($length, 4);
     $body = '14010000D*' . $address . $length . $data;
-
     return $this->send($this->generateMessage($body));
   }
 
@@ -166,6 +176,7 @@ class Client implements  ClientContact
     $status = substr($message, 18, 4);
 
     if ($status !== '0000') {
+      echo "响应异常，代码为：$status\n";
       throw new PlcResponseException($status);
     }
 
@@ -175,5 +186,21 @@ class Client implements  ClientContact
   protected function decToHex($num, $length)
   {
     return str_pad(strtoupper(dechex($num)), $length, '0', STR_PAD_LEFT);
+  }
+
+  protected function swapDec(&$num)
+  {
+    $len = strlen($num);
+    $l = $len / 8;
+    for ($i = 0; $i < $l; $i++) {
+      for ($j = 0; $j < 4; $j++) {
+        $m = $i * 4 + $j;
+        $n = $len - ($i + 1) * 4 + $j;
+
+        $t = $num[$m];
+        $num[$m] = $num[$n];
+        $num[$n] = $t;
+      }
+    }
   }
 }

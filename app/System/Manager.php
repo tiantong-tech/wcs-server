@@ -14,10 +14,13 @@ class Manager implements ManagerContact
 
   protected $keepaliveInterval;
 
+  protected $maxTime;
+
   public function __construct()
   {
     $this->keepaliveInterval = 5;
     $this->watchInterval = 5;
+    $this->maxTime = 10000;
   }
 
   public function keepalive()
@@ -37,7 +40,7 @@ class Manager implements ManagerContact
     $i = 0;
     // 执行
     while(++$i) {
-      echo "Round $i\n";
+      echo "time: $i\n";
       $plc->tryOnce(function ($plc) use ($i) {
         if ($i % 1 == 0) {
           $this->handleCheck($i, $plc);
@@ -51,19 +54,19 @@ class Manager implements ManagerContact
 
       if ($i % $this->keepaliveInterval == 0) {
         $this->keepalive();
-        echo "WCS 存活记录确认\n";
+        echo "WCS 存活更新完毕\n";
       }
 
-      if ($i > 10000) {
+      if ($i > 2000000) {
         $i = 0;
       }
 
-      sleep(1);
+      // sleep(1);
       echo "\n";
     }
   }
 
-  public function registerTask()
+  public function registerTask(\Closure $callback, int $interval)
   {
 
   }
@@ -71,6 +74,7 @@ class Manager implements ManagerContact
   protected function initPlc(): Plc
   {
     $plc = new Plc('localhost', 9502);
+    // $plc = new Plc('192.168.3.39', 8000);
     $plc->connect();
 
     return $plc;
@@ -91,6 +95,6 @@ class Manager implements ManagerContact
 
   protected function handleHeartbeat(int $i, Plc $plc)
   {
-    $plc->writewd('002200', $i);
+    $plc->writewd('002200', $i, 2);
   }
 }
