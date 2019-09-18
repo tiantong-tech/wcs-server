@@ -2,8 +2,9 @@
 
 use Illuminate\Foundation\Inspiring;
 use App\Swoole\TcpServer;
-use App\Plc\Client as Plc;
 use Illuminate\Support\Facades\Redis;
+use App\Plc\PlcAccessor;
+use App\System\HoisterSystemAccessor;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,13 +41,14 @@ Artisan::command('plc', function () {
   $plc->writewd('002200', 100000, 2);
 });
 
-Artisan::command('get', function () {
-  Redis::set('test', 1);
-  Redis::expire('test', 10);
+Artisan::command('get', function (HoisterSystemAccessor $hoisters) {
+  return 100;
+  // Redis::set('test', 1);
+  // Redis::expire('test', 10);
 
-  while(1) {
-    echo Redis::get('test');
+  // while(1) {
+  //   echo Redis::get('test');
 
-    sleep(1);
-  }
+  //   sleep(1);
+  // }
 });

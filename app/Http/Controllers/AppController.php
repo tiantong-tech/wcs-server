@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use IRedis;
+use Artisan;
 
 class AppController extends _Controller
 {
   public function home()
   {
-    return IRedis::get('test');
+    Artisan::call('get');
 
-    return [
-      'msg' => env('APP_NAME') . ' api'
-    ];
+    return $this->success('success to excute artisan command');
   }
 }

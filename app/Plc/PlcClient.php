@@ -4,7 +4,7 @@ namespace App\Plc;
 
 use Swoole\Client;
 
-class PlcClient implements  ClientContact
+class PlcClient implements  PlcClientContact
 {
   protected $host;
 

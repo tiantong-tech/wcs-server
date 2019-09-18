@@ -8,5 +8,5 @@ interface ManagerContact
 
   public function isAlive(): boolean;
 
-  public function registerTask(\Closure $callback, int $interval);
+  public function keepalive();
 }

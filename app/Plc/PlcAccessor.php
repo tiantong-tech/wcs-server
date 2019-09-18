@@ -4,7 +4,7 @@ namespace App\Plc;
 
 use App\Models\Plc;
 
-class Accessor
+class PlcAccessor
 {
   protected $plcs;
 
@@ -16,17 +16,27 @@ class Accessor
     $this->getPlcClients();
   }
 
+  public function clients()
+  {
+    return $this->clients;
+  }
+
+  public function get(int $id): PlcClient
+  {
+    return $this->clients[$id];
+  }
+
   protected function getPlcData()
   {
     $this->plcs = Plc::all();
   }
 
-  protected function getClients()
+  protected function getPlcClients()
   {
     $this->clients = [];
 
     foreach ($this->plcs as $plc) {
-      $this->clients[$plc->id] = new Client($plc->host, $plc->port);
+      $this->clients[$plc->id] = new PlcClient($plc->host, $plc->port);
     }
   }
 }

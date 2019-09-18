@@ -2,8 +2,7 @@
 
 namespace App\Plc;
 
-// 负责通信功能
-interface ClientContact
+interface PlcClientContact
 {
   public function connect();
 
