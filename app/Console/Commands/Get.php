@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use IRedis as Redis;
 use App\Models\Hoister;
+use Swoole\Coroutine;
 
 class Get extends _Command
 {
@@ -14,8 +15,11 @@ class Get extends _Command
   public function handle()
   {
     Redis::set('test', true);
-
-    echo getType(Redis::get('test'));
-    echo "\n";
+    for ($i = 0; $i < 10; $i++) {
+      go(function () use ($i) {
+        echo $i;
+        Coroutine::sleep(1);
+      });
+    }
   }
 }

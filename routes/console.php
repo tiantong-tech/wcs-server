@@ -40,15 +40,3 @@ Artisan::command('plc', function () {
 
   $plc->writewd('002200', 100000, 2);
 });
-
-Artisan::command('get', function (HoisterSystemAccessor $hoisters) {
-  return 100;
-  // Redis::set('test', 1);
-  // Redis::expire('test', 10);
-
-  // while(1) {
-  //   echo Redis::get('test');
-
-  //   sleep(1);
-  // }
-});

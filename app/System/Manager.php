@@ -12,9 +12,18 @@ class Manager implements ManagerContact
 
   public function __construct(HoisterSystemAccessor $hoister)
   {
-    $this->keepaliveInterval = 5;
-    $this->watchInterval = 5;
+    // $pid = Redis::get('pid');
+    // if ($pid) {
+    //   echo "系统运行中: $pid";
+
+    //   exit();
+    // } else {
+    //   Redis::set('pid', getmypid());
+    // }
+
     $this->maxTime = 10000;
+    $this->watchInterval = 5;
+    $this->keepaliveInterval = 5;
     $this->hoisters = $hoister->hoisters();
   }
 
@@ -22,10 +31,14 @@ class Manager implements ManagerContact
   {
     $time = 0;
     // 执行
+    foreach ($this->hoisters as $hoister) {
+      $hoister->beforeRun();
+    }
     while(++$time) {
       echo "time: $time\n";
-      foreach ($this->hoisters as $hoister) {
+      foreach ($this->hoisters as $key => $hoister) {
         $hoister->run($time);
+        echo "提升机$key 运行完毕\n";
       }
       if ($time % $this->keepaliveInterval == 0) {
         $this->keepalive();
@@ -39,6 +52,11 @@ class Manager implements ManagerContact
       sleep(1);
       echo "\n";
     }
+  }
+
+  public function close()
+  {
+    Redis::set('system.manager.close', 1);
   }
 
   public function keepalive()

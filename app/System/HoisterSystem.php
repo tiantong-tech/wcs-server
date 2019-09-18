@@ -15,7 +15,11 @@ class HoisterSystem implements HoisterSystemContact
   {
     $this->plc = $plc;
     $this->hoister = $hoister;
-    $plc->connect();
+  }
+
+  public function beforeRun()
+  {
+    $this->plc->connect();
   }
 
   public function run($time)
