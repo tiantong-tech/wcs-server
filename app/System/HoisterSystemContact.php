@@ -4,5 +4,9 @@ namespace App\System;
 
 interface HoisterSystemContact
 {
-  public function run(int $time);
+  public function init();
+
+  public function run();
+
+  public function stop();
 }

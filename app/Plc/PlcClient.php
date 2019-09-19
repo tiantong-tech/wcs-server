@@ -128,6 +128,9 @@ class PlcClient implements  PlcClientContact
     return $this->decodeMessage($result);
   }
 
+  /**
+   * 后续考虑增加 genreateReadwdMessage 和 generateWritewdMessage
+   */
   public function readwd(string $address, int $length = 1)
   {
     $address = str_pad($address, 6, '0', STR_PAD_LEFT);
@@ -150,7 +153,6 @@ class PlcClient implements  PlcClientContact
   /**
    * sub methods
    */
-
   protected function generateMessage($body)
   {
     // 0010 为 CPU监视定时器

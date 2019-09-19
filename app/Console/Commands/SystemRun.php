@@ -14,6 +14,6 @@ class SystemRun extends _Command
 
   public function handle(Manager $manager)
   {
-    $manager->run();
+    $manager->start();
   }
 }

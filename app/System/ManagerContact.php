@@ -4,9 +4,7 @@ namespace App\System;
 
 interface ManagerContact
 {
-  public function run();
+  public function start();
 
   public function isAlive(): boolean;
-
-  public function keepalive(int $time);
 }

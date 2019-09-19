@@ -7,65 +7,50 @@ use Illuminate\Support\Facades\Redis;
 
 class Manager implements ManagerContact
 {
+  protected $hoisters;
+
   protected $keepaliveInterval;
 
   protected $maxTime;
 
-  public function __construct(HoisterSystemAccessor $hoister)
+  public function __construct()
   {
-    // $pid = Redis::get('pid');
-    // if ($pid) {
-    //   echo "系统运行中: $pid";
-
-    //   exit();
-    // } else {
-    //   Redis::set('pid', getmypid());
-    // }
-
-    $this->maxTime = 10000;
-    $this->watchInterval = 5;
-    $this->keepaliveInterval = 5;
-    $this->hoisters = $hoister->hoisters();
   }
 
-  public function run()
+  // once start never stop
+  public function start()
   {
-    go (function () {
+    $hoister = new HoisterSystemAccessor();
+    $this->hoisters = $hoister->hoisters();
+    $this->maxTime = 10000;
+    $this->watchInterval = 5;
+    $this->keepaliveInterval = 1;
+    $this->handleKeepalive();
+    $this->autorun();
+  }
+
+  protected function autorun()
+  {
+    foreach ($this->hoisters as $hoister) {
+      $hoister->init();
+      $hoister->run();
+    }
+  }
+
+  protected function handleKeepalive()
+  {
+    go(function () {
       $time = 0;
       while(1) {
-        $this->keepalive($time);
+        if ($time % $this->keepaliveInterval == 0) {
+          Redis::set('system.manager.keepalive', 1);
+          Redis::expire('system.manager.keepalive', $this->keepaliveInterval + 1);
+          // echo "wcs 存活记录完毕\n";
+        }
         $time++;
         Coroutine::sleep(1);
       }
     });
-    foreach ($this->hoisters as $key => $hoister) {
-      go(function () use ($key, $hoister) {
-        $hoister->beforeRun();
-        $time = 0;
-        while (1) {
-          echo "提升机$key, round $time\n";
-          $hoister->run($time);
-          echo "任务执行完毕\n";
-
-          Coroutine::sleep(1);
-          $time++;
-        }
-      });
-    }
-  }
-
-  public function close()
-  {
-    Redis::set('system.manager.close', 1);
-  }
-
-  public function keepalive($time)
-  {
-    if ($time % $this->keepaliveInterval == 0) {
-      Redis::set('system.manager.keepalive', 1);
-      Redis::expire('system.manager.keepalive', $this->keepaliveInterval + 1);
-      echo "wcs 存活记录完毕\n";
-    }
   }
 
   public function isAlive(): boolean
