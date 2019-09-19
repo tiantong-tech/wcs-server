@@ -8,5 +8,5 @@ interface ManagerContact
 
   public function isAlive(): boolean;
 
-  public function keepalive();
+  public function keepalive(int $time);
 }

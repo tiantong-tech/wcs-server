@@ -41,7 +41,7 @@ class PlcSeeder extends Seeder
           'gate2_alarm_address' => '003006',
         ];
       }
-  
+
       DB::table('hoister_floors')->insert($floors);
     }
 	}

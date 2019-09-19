@@ -2,6 +2,7 @@
 
 namespace App\System;
 
+use Swoole\Coroutine;
 use Illuminate\Support\Facades\Redis;
 
 class Manager implements ManagerContact
@@ -29,28 +30,27 @@ class Manager implements ManagerContact
 
   public function run()
   {
-    $time = 0;
-    // 执行
-    foreach ($this->hoisters as $hoister) {
-      $hoister->beforeRun();
-    }
-    while(++$time) {
-      echo "time: $time\n";
-      foreach ($this->hoisters as $key => $hoister) {
-        $hoister->run($time);
-        echo "提升机$key 运行完毕\n";
+    go (function () {
+      $time = 0;
+      while(1) {
+        $this->keepalive($time);
+        $time++;
+        Coroutine::sleep(1);
       }
-      if ($time % $this->keepaliveInterval == 0) {
-        $this->keepalive();
-        echo "WCS 存活更新完毕\n";
-      }
-
-      if ($time > 20000) {
+    });
+    foreach ($this->hoisters as $key => $hoister) {
+      go(function () use ($key, $hoister) {
+        $hoister->beforeRun();
         $time = 0;
-      }
+        while (1) {
+          echo "提升机$key, round $time\n";
+          $hoister->run($time);
+          echo "任务执行完毕\n";
 
-      sleep(1);
-      echo "\n";
+          Coroutine::sleep(1);
+          $time++;
+        }
+      });
     }
   }
 
@@ -59,10 +59,13 @@ class Manager implements ManagerContact
     Redis::set('system.manager.close', 1);
   }
 
-  public function keepalive()
+  public function keepalive($time)
   {
-    Redis::set('system.manager.keepalive', 1);
-    Redis::expire('system.manager.keepalive', $this->keepaliveInterval + 1);
+    if ($time % $this->keepaliveInterval == 0) {
+      Redis::set('system.manager.keepalive', 1);
+      Redis::expire('system.manager.keepalive', $this->keepaliveInterval + 1);
+      echo "wcs 存活记录完毕\n";
+    }
   }
 
   public function isAlive(): boolean
