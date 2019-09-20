@@ -15,11 +15,14 @@ class HoisterSystem implements HoisterSystemContact
 
   protected $hoister;
 
+  protected $isRunning = false;
+
   protected $isStopping = false;
 
   public function __construct(int $id)
   {
     $this->id = $id;
+    // $this->initSubscribe();
   }
 
   public function init()
@@ -33,6 +36,19 @@ class HoisterSystem implements HoisterSystemContact
     );
   }
 
+  public function initSubscribe()
+  {
+    $channel = "system:hoister:$this->id:command";
+
+    Redis::subscribe($channel, function ($command) {
+      if (!$this->isRunning) return;
+
+      switch ($command) {
+        case 'stop': return $this->stop();
+      }
+    });
+  }
+
   public function run()
   {
     go(function () {
@@ -44,7 +60,7 @@ class HoisterSystem implements HoisterSystemContact
           $this->readStatus();
           $this->writeHeartbeat($time);
         });
-
+        $this->handleCommand();
         // handle stop
         if ($this->isStopping) {
           // echo "系统已停止\n";
@@ -56,6 +72,11 @@ class HoisterSystem implements HoisterSystemContact
         $time++;
       }
     });
+  }
+
+  public function handleCommand()
+  {
+
   }
 
   public function stop()

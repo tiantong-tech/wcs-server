@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use IRedis as Redis;
 use Swoole\Coroutine;
 use App\Models\Hoister;
+use Swoole\Coroutine\Socket;
 
 class Set extends _Command
 {
@@ -14,6 +15,15 @@ class Set extends _Command
 
   public function handle()
   {
-    Redis::publish('test-channel', json_encode(['foo' => '123123']));
+    Redis::set('key', 1000);
+    // Redis::publish('test-channel', 'stop');
+    // Redis::publish('test-channel1', 'stop');
+    // go (function () {
+    //   $socket = new Socket(AF_INET, SOCK_STREAM);
+    //   $socket->connect('localhost', 9503);
+    //   $socket->send('test');
+    //   echo $socket->recv();
+    //   $socket->close();
+    // });
   }
 }

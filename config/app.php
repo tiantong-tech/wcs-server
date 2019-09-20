@@ -59,7 +59,6 @@ return [
     'Artisan' => Illuminate\Support\Facades\Artisan::class,
     'Request' => Illuminate\Support\Facades\Request::class,
     'Validator' => Illuminate\Support\Facades\Validator::class,
-    'IRedis' => Illuminate\Support\Facades\Redis::class,
 
     /**
      * @Services
@@ -68,6 +67,7 @@ return [
     'Auth' => App\Facades\Auth::class,
     'Gaode' => App\Facades\Gaode::class,
     'Qiniu' => App\Facades\Qiniu::class,
+    'IRedis' => App\Facades\Redis::class,
     'Series' => App\Facades\Series::class,
     'Postgres' => App\Facades\Postgres::class,
     'Transaction' => App\Facades\Transaction::class,

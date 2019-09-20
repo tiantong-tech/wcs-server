@@ -14,29 +14,19 @@ class Get extends _Command
 
   public function handle()
   {
-    // Redis::subscribe(['test-channel'], function ($message) {
-    //   echo $message;
+    go(function () {
+      $redis = Redis::getAsyncClient();
+      $redis->set('key2', 'swoole redis work');
+      var_dump($redis->get('key2'));
+    });
+    // go(function () {
+    //   Redis::subscribe(['test-channel', 'test-channel1'], function ($message) {
+    //     echo $message;
+    //   });
     // });
-    $data = [
-      'heartbeat' => 0,
-      'lift_position' => 0,
-      'floors' => [
-        [
-          'gate1_auto_address' => 0,
-          'gate1_alarm_address' => 0,
-          'gate1_occupied_address' => 0
-        ],
-        [
-          'gate1_auto_address' => 0,
-          'gate1_alarm_address' => 0,
-          'gate1_occupied_address' => 0
-        ],
-      ]
-    ];
-
-    Redis::set('user', json_encode($data));
-
-    $user = Redis::hgetall('user');
-    dd ($user);
+    // go(function () {
+    //   sleep(100);
+    // });
+    // echo 100;
   }
 }
