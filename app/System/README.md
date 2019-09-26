@@ -34,3 +34,20 @@ system 是业务核心，例如：提升机系统。
 
 结束调用
 
+### Task Manager
+
+任务管理器用于执行周期性的循环任务，包括心跳处理、数据采集等。
+1. 任务时钟 t：从 0 开始，每次循环将自增 1，到 max 后重新回到 0，周而复始
+2. 任务管理器将永远执行，循环间隔为 1s（暂时）
+
+### heartbeat connector
+
+将任务时钟 t 写入到 PLC 系统中，写入间隔为 3s
+
+### data collector
+
+将提升机数据（PLC）采集至 redis 数据库中
+
+### command console
+
+命令控制器，订阅一个 command 频道，按顺序处理 command 中的命令
