@@ -6,6 +6,7 @@ Route::get('/api', 'AppController@home');
 Route::post('/plc/search', 'PlcController@search');
 
 Route::post('/hoisters/list', 'HoisterController@list');
+Route::post('/hoisters/list/all', 'HoisterController@listAll');
 Route::post('/hoisters/detail', 'HoisterController@getDetail');
 Route::post('/hoisters/create', 'HoisterController@createHoister');
 Route::post('/hoisters/update', 'HoisterController@updateHoister');

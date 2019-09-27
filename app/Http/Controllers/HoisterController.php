@@ -13,6 +13,13 @@ class HoisterController extends _Controller
     return Hoister::select('id', 'name')->orderBy('id')->get();
   }
 
+  public function listAll()
+  {
+    return Hoister::with(['floors' => function ($query) {
+      $query->orderBy('key');
+    }])->orderBy('id')->get();
+  }
+
   public function deleteHoister()
   {
     $hst = $this->getHoister();
