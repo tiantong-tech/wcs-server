@@ -50,7 +50,7 @@ class HoisterSystem
       while (1) {
         echo "hoister" . $this->hoister->id . ": round $time\n";
         $plc->tryOnce(function () use ($plc, $time) {
-          $this->readStatus($plc);
+          // $this->readStatus($plc);
           $this->writeHeartbeat($plc, $time);
         });
 
@@ -104,6 +104,7 @@ class HoisterSystem
     if ($time % $this->hoister->heartbeat_interval !== 0) return;
 
     $plc->writewd('002200', $time);
+    // echo '心跳：' . $plc->readwd('002200') . "\n";
   }
 
   private function readStatus($plc)

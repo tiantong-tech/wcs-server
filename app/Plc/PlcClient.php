@@ -29,10 +29,15 @@ class PlcClient implements  PlcClientContact
    *
    * @return Boolean
    */
-  public function connect()
+  public function connect($host = null, $port = null)
   {
     if ($this->isTcpClientConnected) {
       $this->tcpClient->close();
+    }
+
+    if ($host) {
+      $this->host = $host;
+      $this->port = $port;
     }
 
     try {
@@ -54,12 +59,12 @@ class PlcClient implements  PlcClientContact
 
   public function reconnect()
   {
-    echo "重连中";
+    // echo "重连中";
     while (1) {
       try {
-        echo "...";
+        // echo "...";
         $this->connectOrFail();
-        echo "\n连接已恢复\n";
+        // echo "\n连接已恢复\n";
         return;
       } catch (PlcConnectionException $e) {
         sleep(1);
@@ -89,12 +94,12 @@ class PlcClient implements  PlcClientContact
     try {
       $callback($this);
     } catch (PlcException $e) {
-      echo "正在尝试重连...\n";
+      // echo "正在尝试重连...\n";
       if ($this->connect()) {
-        echo "已连接\n";
+        // echo "已连接\n";
         $callback($this);
       } else {
-        echo "重连失败\n";
+        // echo "重连失败\n";
       }
     }
   }
@@ -118,14 +123,50 @@ class PlcClient implements  PlcClientContact
       $this->tcpClient->send($message);
       $result = $this->tcpClient->recv();
     } catch (\Exception $e) {
-      echo "指令传送失败\n";
-      echo "指令：$message\n";
-      echo "响应：$result\n";
+      // echo "指令传送失败\n";
+      // echo "指令：$message\n";
+      // echo "响应：$result\n";
 
       throw new PlcRequestException;
     }
 
     return $this->decodeMessage($result);
+  }
+
+  public function read(string $address, int $length = 1)
+  {
+    $prefix = $address[0];
+    if (is_numeric($prefix)) {
+      $prefix = "D";
+    } else {
+      $address = substr($address, 1);
+    }
+
+    $prefix = $prefix . "*";
+    $address = str_pad($address, 6, '0', STR_PAD_LEFT);
+    $length = $this->decToHex($length, 4);
+    $body = '04010000' . $prefix . $address . $length;
+
+    return $this->send($this->generateMessage($body));
+  }
+
+  public function write(string $address, $data, int $length = 1)
+  {
+    $prefix = $address[0];
+    if (is_numeric($prefix)) {
+      $prefix = "D";
+    } else {
+      $address = substr($address, 1);
+    }
+
+    $prefix = $prefix . "*";
+    $address = str_pad($address, 6, '0', STR_PAD_LEFT);
+    $data = $this->decToHex($data, $length * 4);
+    $this->swapDec($data);
+    $length = $this->decToHex($length, 4);
+    $body = '14010000' . $prefix . $address . $length . $data;
+
+    return $this->send($this->generateMessage($body));
   }
 
   /**
@@ -147,6 +188,7 @@ class PlcClient implements  PlcClientContact
     $this->swapDec($data);
     $length = $this->decToHex($length, 4);
     $body = '14010000D*' . $address . $length . $data;
+
     return $this->send($this->generateMessage($body));
   }
 

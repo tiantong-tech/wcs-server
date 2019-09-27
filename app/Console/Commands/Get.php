@@ -2,10 +2,7 @@
 
 namespace App\Console\Commands;
 
-use IRedis as Redis;
-use Swoole\Coroutine;
-use App\Models\Hoister;
-use App\System\HoisterStateServer;
+use App\Plc\PlcClient as Plc;
 
 class Get extends _Command
 {
@@ -13,8 +10,12 @@ class Get extends _Command
 
   protected $description = 'test command';
 
-  public function handle(HoisterStateServer $server)
+  public function handle()
   {
-    $server->start();
+    $plc = new Plc('192.168.3.39', '8001');
+    $plc->connect();
+    while (1) {
+      $value = $plc->read('002000');
+    }
   }
 }
