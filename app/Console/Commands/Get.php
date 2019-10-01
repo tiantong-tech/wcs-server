@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use IRedis;
 use App\Plc\PlcClient as Plc;
 
 class Get extends _Command
@@ -12,10 +13,10 @@ class Get extends _Command
 
   public function handle()
   {
-    $plc = new Plc('192.168.3.39', '8001');
-    $plc->connect();
-    while (1) {
-      $value = $plc->read('002000');
-    }
+    $key = 'system.hoister.1.state';
+    IRedis::subscribe([$key], function ($state) {
+      echo $state;
+      echo "\n";
+    });
   }
 }

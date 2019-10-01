@@ -1,10 +1,7 @@
 <?php
 
+use App\Tcp\PlcServer;
 use Illuminate\Foundation\Inspiring;
-use App\Swoole\TcpServer;
-use Illuminate\Support\Facades\Redis;
-use App\Plc\PlcAccessor;
-use App\System\HoisterSystemAccessor;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,18 +22,7 @@ Artisan::command('db:rebuild', function () {
 	$this->call('migrate:refresh', ['--seed' => 'default']);
 })->describe('migrate:refresh && db:seed');
 
-Artisan::command('tcp:serve', function () {
-  $server = new TcpServer;
+Artisan::command('plc:serve', function () {
+  $server = new PlcServer;
   $server->start();
-});
-
-Artisan::command('plc', function () {
-  $plc = new Plc('192.168.3.39', 8000);
-  $plc->connect();
-
-  function output ($res) {
-    echo $res . "\n";
-  }
-
-  $plc->writewd('002200', 100000, 2);
-});
+})->describe('mock a plc device');

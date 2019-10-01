@@ -16,11 +16,13 @@ class PlcClient implements  PlcClientContact
 
   protected $isTcpClientConnected;
 
-  public function __construct(string $host, int $port)
+  public function __construct(string $host = '', string $port = '')
   {
     $this->tcpClient = new Client(SWOOLE_SOCK_TCP);
-    $this->host = $host;
-    $this->port = $port;
+    if ($host) {
+      $this->host = $host;
+      $this->port = $port;
+    }
   }
 
   /**
@@ -45,6 +47,8 @@ class PlcClient implements  PlcClientContact
       $this->isTcpClientConnected = true;
     } catch (\Exception $e) {
       $this->isTcpClientConnected = false;
+
+      return false;
     }
 
     try {
@@ -52,19 +56,15 @@ class PlcClient implements  PlcClientContact
 
       return true;
     } catch (PlcConnectionException $e) {
-
       return false;
     }
   }
 
   public function reconnect()
   {
-    // echo "重连中";
     while (1) {
       try {
-        // echo "...";
         $this->connectOrFail();
-        // echo "\n连接已恢复\n";
         return;
       } catch (PlcConnectionException $e) {
         sleep(1);
@@ -94,25 +94,11 @@ class PlcClient implements  PlcClientContact
     try {
       $callback($this);
     } catch (PlcException $e) {
-      // echo "正在尝试重连...\n";
       if ($this->connect()) {
-        // echo "已连接\n";
         $callback($this);
       } else {
-        // echo "重连失败\n";
-      }
-    }
-  }
 
-  /**
-   * @depend 连接成功后 read 必定成功
-   */
-  public function test()
-  {
-    try {
-      $this->readwd('002000');
-    } catch (PlcException $e) {
-      throw new PlcConnectionException;
+      }
     }
   }
 
@@ -123,71 +109,30 @@ class PlcClient implements  PlcClientContact
       $this->tcpClient->send($message);
       $result = $this->tcpClient->recv();
     } catch (\Exception $e) {
-      // echo "指令传送失败\n";
-      // echo "指令：$message\n";
-      // echo "响应：$result\n";
-
       throw new PlcRequestException;
     }
 
     return $this->decodeMessage($result);
   }
 
-  public function read(string $address, int $length = 1)
-  {
-    $prefix = $address[0];
-    if (is_numeric($prefix)) {
-      $prefix = "D";
-    } else {
-      $address = substr($address, 1);
-    }
-
-    $prefix = $prefix . "*";
-    $address = str_pad($address, 6, '0', STR_PAD_LEFT);
-    $length = $this->decToHex($length, 4);
-    $body = '04010000' . $prefix . $address . $length;
-
-    return $this->send($this->generateMessage($body));
-  }
-
-  public function write(string $address, $data, int $length = 1)
-  {
-    $prefix = $address[0];
-    if (is_numeric($prefix)) {
-      $prefix = "D";
-    } else {
-      $address = substr($address, 1);
-    }
-
-    $prefix = $prefix . "*";
-    $address = str_pad($address, 6, '0', STR_PAD_LEFT);
-    $data = $this->decToHex($data, $length * 4);
-    $this->swapDec($data);
-    $length = $this->decToHex($length, 4);
-    $body = '14010000' . $prefix . $address . $length . $data;
-
-    return $this->send($this->generateMessage($body));
-  }
-
   /**
-   * 后续考虑增加 genreateReadwdMessage 和 generateWritewdMessage
+   * 后续考虑增加 getReadMessage 和 getWriteMessage
    */
-  public function readwd(string $address, int $length = 1)
+  public function readw(string $address, int $length = 1)
   {
-    $address = str_pad($address, 6, '0', STR_PAD_LEFT);
-    $length = $this->decToHex($length, 4);
-    $body = '04010000D*' . $address . $length;
+    $body = '04010000' .
+      $this->handleAddress($address) .
+      $this->handleLength($length);
 
     return $this->send($this->generateMessage($body));
   }
 
-  public function writewd(string $address, int $data, int $length = 1)
+  public function writew(string $address, int $data, int $length = 1)
   {
-    $address = str_pad($address, 6, '0', STR_PAD_LEFT);
-    $data = $this->decToHex($data, $length * 4);
-    $this->swapDec($data);
-    $length = $this->decToHex($length, 4);
-    $body = '14010000D*' . $address . $length . $data;
+    $body = '14010000' .
+      $this->handleAddress($address) .
+      $this->handleData($data, $length) .
+      $this->handleLength($length);
 
     return $this->send($this->generateMessage($body));
   }
@@ -220,31 +165,65 @@ class PlcClient implements  PlcClientContact
     $status = substr($message, 18, 4);
 
     if ($status !== '0000') {
-      echo "响应异常，代码为：$status\n";
       throw new PlcResponseException($status);
     }
 
     return strlen($message) > 22 ? substr($message, 22) : '';
   }
 
-  protected function decToHex($num, $length)
+  public function test()
   {
-    return str_pad(strtoupper(dechex($num)), $length, '0', STR_PAD_LEFT);
+    try {
+      $this->readw('002000');
+    } catch (PlcException $e) {
+      throw new PlcConnectionException;
+    }
   }
 
-  protected function swapDec(&$num)
+  protected function handleAddress(string &$address): string
   {
-    $len = strlen($num);
+    $prefix = $address[0];
+    if (is_numeric($prefix)) {
+      $prefix = "D";
+    } else {
+      $address = substr($address, 1);
+    }
+
+    return $address = $prefix . '*' . str_pad($address, 6, '0', STR_PAD_LEFT);
+  }
+
+  protected function handleData(string &$data, int $length): string
+  {
+    $data = $this->decToHex($data, $length * 4);
+    $this->swapDec($data);
+
+    return $data;
+  }
+
+  protected function handleLength(int $len): string
+  {
+    return $this->decToHex($len, 4);
+  }
+
+  // 将 01110010 转化为 00100111
+  protected function swapDec(string &$data)
+  {
+    $len = strlen($data);
     $l = $len / 8;
     for ($i = 0; $i < $l; $i++) {
       for ($j = 0; $j < 4; $j++) {
         $m = $i * 4 + $j;
         $n = $len - ($i + 1) * 4 + $j;
 
-        $t = $num[$m];
-        $num[$m] = $num[$n];
-        $num[$n] = $t;
+        $t = $data[$m];
+        $data[$m] = $data[$n];
+        $data[$n] = $t;
       }
     }
+  }
+
+  protected function decToHex(int $num, int $length)
+  {
+    return str_pad(strtoupper(dechex($num)), $length, '0', STR_PAD_LEFT);
   }
 }

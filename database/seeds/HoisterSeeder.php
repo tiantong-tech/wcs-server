@@ -29,9 +29,9 @@ class HoisterSeeder extends Seeder
           'door1_auto_address' => "D0030$i" . '1',
           'door1_alarm_address' => "D0030$i" . '2',
           'door1_block_address' => "D0030$i" . '3',
-          // 'door2_auto_address' => "003$i" . '04',
-          // 'door2_occupied_address' => "003$i" . '05',
-          // 'door2_alarm_address' => "003$i" . '06',
+          'door2_auto_address' => "003$i" . '04',
+          'door2_block_address' => "003$i" . '05',
+          'door2_alarm_address' => "003$i" . '06',
         ];
       }
 

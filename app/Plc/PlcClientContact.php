@@ -16,7 +16,7 @@ interface PlcClientContact
 
   public function send(string $message);
 
-  public function readwd(string $address);
+  public function readw(string $address);
 
-  public function writewd(string $address, int $data);
+  public function writew(string $address, int $data);
 }

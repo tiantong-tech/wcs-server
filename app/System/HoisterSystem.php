@@ -19,6 +19,11 @@ class HoisterSystem
 
   protected $commands = [];
 
+  const FLOOR_DOORS = [
+    'door1_auto_address', 'door1_alarm_address', 'door1_block_address',
+    'door2_auto_address', 'door2_alarm_address', 'door2_block_address',
+  ];
+
   public function __construct(int $id)
   {
     $this->id = $id;
@@ -48,9 +53,11 @@ class HoisterSystem
       $plc->connect();
 
       while (1) {
-        echo "hoister" . $this->hoister->id . ": round $time\n";
+        if ($this->id === 1) {
+          echo "round $time\n";
+        }
         $plc->tryOnce(function () use ($plc, $time) {
-          // $this->readStatus($plc);
+          $this->readStatus($plc);
           $this->writeHeartbeat($plc, $time);
         });
 
@@ -103,15 +110,14 @@ class HoisterSystem
   {
     if ($time % $this->hoister->heartbeat_interval !== 0) return;
 
-    $plc->writewd('002200', $time);
-    // echo '心跳：' . $plc->readwd('002200') . "\n";
+    $plc->writew($this->hoister->heartbeat_address, $time);
   }
 
   private function readStatus($plc)
   {
     $result = json_encode([
-      'heartbeat' => $plc->readwd($this->hoister->heartbeat_address),
-      'lift_position' => $plc->readwd($this->hoister->lift_position_address),
+      'heartbeat' => $plc->readw($this->hoister->heartbeat_address),
+      'lift_position' => $plc->readw($this->hoister->lift_position_address),
       'floors' => $this->readFloorStatus($plc)
     ]);
 
@@ -122,20 +128,13 @@ class HoisterSystem
   private function readFloorStatus($plc)
   {
     $values = [];
-
     foreach ($this->hoister->floors as $floor) {
-      $values[$floor->key] = [];
-      $values[$floor->key][0] = [
-        $plc->readwd($floor->gate1_auto_address),
-        $plc->readwd($floor->gate1_auto_address),
-        $plc->readwd($floor->gate1_auto_address)
-      ];
-      if (!$floor->gate2_auto_address) continue;
-      $values[$floor->key][1] = [
-        $plc->readwd($floor->gate2_auto_address),
-        $plc->readwd($floor->gate2_auto_address),
-        $plc->readwd($floor->gate2_auto_address)
-      ];
+      $states = [];
+      foreach (self::FLOOR_DOORS as $key) {
+        $address = $floor->$key;
+        $states[] = $address === '0' ? null : $plc->readw($address);
+      }
+      $values[$floor->key] = $states;
     }
 
     return $values;

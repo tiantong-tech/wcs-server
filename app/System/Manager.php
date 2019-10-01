@@ -39,7 +39,7 @@ class Manager
         if ($time % $this->keepaliveInterval == 0) {
           Redis::set('system.manager.keepalive', 1);
           Redis::expire('system.manager.keepalive', $this->keepaliveInterval + 1);
-          echo "wcs 存活记录完毕\n";
+          // echo "wcs 存活记录完毕\n";
         }
         $time++;
         Coroutine::sleep(1);

@@ -39,6 +39,7 @@ services:
   redis:
     container_name: ${APP_NAME}-redis
     image: redis
+    restart: always
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
     command:

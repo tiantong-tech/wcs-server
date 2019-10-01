@@ -3,8 +3,8 @@
 namespace App\System;
 
 use IRedis as Redis;
-use Swoole\Websocket\Server;
 use App\Services\Accessor;
+use Swoole\Websocket\Server;
 
 class HoisterStateServer extends Accessor
 {
