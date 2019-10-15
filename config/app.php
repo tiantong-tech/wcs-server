@@ -44,8 +44,8 @@ return [
     /**
      * @app
      */
-    App\Providers\AppServiceProvider::class,
-    App\Providers\RouteServiceProvider::class,
+    App\Laravel\Providers\AppServiceProvider::class,
+    App\Laravel\Providers\RouteServiceProvider::class,
   ],
 
   'aliases' => [
@@ -63,13 +63,14 @@ return [
     /**
      * @Services
      */
-    'JWT' => App\Facades\JWT::class,
-    'Auth' => App\Facades\Auth::class,
-    'Gaode' => App\Facades\Gaode::class,
-    'Qiniu' => App\Facades\Qiniu::class,
-    'IRedis' => App\Facades\Redis::class,
-    'Series' => App\Facades\Series::class,
-    'Postgres' => App\Facades\Postgres::class,
-    'Transaction' => App\Facades\Transaction::class,
+    'JWT' => App\Laravel\Facades\JWT::class,
+    'Auth' => App\Laravel\Facades\Auth::class,
+    'Gaode' => App\Laravel\Facades\Gaode::class,
+    'Qiniu' => App\Laravel\Facades\Qiniu::class,
+    'IRedis' => App\Laravel\Facades\Redis::class,
+    'Series' => App\Laravel\Facades\Series::class,
+    'PgStore' => App\Laravel\Facades\PgStore::class,
+    'Postgres' => App\Laravel\Facades\Postgres::class,
+    'Transaction' => App\Laravel\Facades\Transaction::class,
   ],
 ];

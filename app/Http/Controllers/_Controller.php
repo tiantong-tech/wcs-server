@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Override\Controller;
+use App\Laravel\Controller;
 
-class _Controller extends Controller
+abstract class _Controller extends Controller
 {
 
 }

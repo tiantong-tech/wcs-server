@@ -2,9 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\System\Manager;
-use App\Plc\PlcConnectionException;
-use App\Plc\PlcResponseException;
+use App\Systems\Manager;
 
 class SystemRun extends _Command
 {

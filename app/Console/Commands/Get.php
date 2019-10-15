@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use IRedis;
-use App\Plc\PlcClient as Plc;
+use Swoole\Client;
+use App\Laravel\EventBus;
 
 class Get extends _Command
 {
@@ -13,10 +13,13 @@ class Get extends _Command
 
   public function handle()
   {
-    $key = 'system.hoister.1.state';
-    IRedis::subscribe([$key], function ($state) {
-      echo $state;
-      echo "\n";
-    });
+    $client = new Client(SWOOLE_SOCK_TCP);
+    $client->connect('localhost', 8302);
+    $client->send('你好鸭');
+    echo $client->recv();
+    $client->send('别走鸭');
+    echo $client->recv();
+
+    $client->close();
   }
 }

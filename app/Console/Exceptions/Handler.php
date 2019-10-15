@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 use Transaction;
-use App\Override\Exceptions\Handler as _Handler;
+use App\Laravel\Exceptions\Handler as _Handler;
 
 class Handler extends _Handler
 {

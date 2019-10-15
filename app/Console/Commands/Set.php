@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Plc\PlcClient as Plc;
+use App\Devices\Plc\Plc;
 
 class Set extends _Command
 {

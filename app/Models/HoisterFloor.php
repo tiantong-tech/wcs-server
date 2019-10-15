@@ -16,6 +16,11 @@ class HoisterFloor extends _Model
     'door2_auto_address', 'door2_block_address', 'door2_alarm_address',
   ];
 
+  public function apply($builder)
+  {
+    $builder->orderBy('key', 'asc');
+  }
+
   public function setHoisterIdAttribute($value)
   {
     $key = HoisterFloor::where('hoister_id', $value)->max('key') + 1;

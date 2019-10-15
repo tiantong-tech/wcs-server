@@ -28,7 +28,12 @@ class JwtServiceTest extends TestCase
     $payload = JWT::decode($token);
     JWT::isNeedToRefresh();
     JWT::refresh();
-    $this->assertArraySubset($this->payload, $payload);
+    foreach ($this->payload as $key => $value) {
+      if ($payload[$key] !== $value) {
+        $this->assertTrue(false);
+      }
+    }
+    $this->assertTrue(true);
 
     return $payload;
   }

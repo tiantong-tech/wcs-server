@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Override\Eloquent\Model;
+use App\Laravel\Eloquent\Model;
 
 abstract class _Model extends Model
 {

@@ -1,6 +1,6 @@
 <?php
 
-use App\Tcp\PlcServer;
+use App\Devices\Plc\PlcServer;
 use Illuminate\Foundation\Inspiring;
 
 /*
@@ -21,8 +21,3 @@ Artisan::command('inspire', function () {
 Artisan::command('db:rebuild', function () {
 	$this->call('migrate:refresh', ['--seed' => 'default']);
 })->describe('migrate:refresh && db:seed');
-
-Artisan::command('plc:serve', function () {
-  $server = new PlcServer;
-  $server->start();
-})->describe('mock a plc device');

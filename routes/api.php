@@ -1,6 +1,6 @@
 <?php
 
-Route::get('/', 'AppController@home');
+Route::post('/', 'AppController@home');
 Route::get('/api', 'AppController@home');
 
 Route::post('/hoisters/list', 'HoisterController@list');
@@ -11,6 +11,10 @@ Route::post('/hoisters/update', 'HoisterController@updateHoister');
 Route::post('/hoisters/delete', 'HoisterController@deleteHoister');
 Route::post('/hoisters/floors/create', 'HoisterController@createFloor');
 Route::post('/hoisters/floors/delete', 'HoisterController@deleteFloor');
+
+Route::post('/hoisters/run', 'HoisterController@run');
+Route::post('/hoisters/stop', 'HoisterController@stop');
+Route::post('/hoisters/state/running', 'HoisterController@isRunning');
 
 Route::post('/plcs/test', 'PlcController@test');
 Route::post('/plcs/state', 'PlcController@getState');

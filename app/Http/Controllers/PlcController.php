@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Plc\PlcClient as Plc;
+use App\Devices\Plc\Plc;
 
 class PlcController extends _Controller
 {

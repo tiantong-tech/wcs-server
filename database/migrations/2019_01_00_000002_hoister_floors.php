@@ -8,7 +8,7 @@ class HoisterFloors extends Migration
 {
   public function up()
   {
-    Schema::create('hoister_floors', function ($table) {
+    Schema::create('hoister_floors', function (Blueprint $table) {
       $table->increments('id');
       $table->integer('hoister_id');
       $table->integer('key')->default(0);
@@ -19,6 +19,8 @@ class HoisterFloors extends Migration
       $table->string('door2_auto_address')->default('0');
       $table->string('door2_block_address')->default('0');
       $table->string('door2_alarm_address')->default('0');
+
+      $table->unique(['hoister_id', 'key']);
     });
   }
 

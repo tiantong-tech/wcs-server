@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Transaction;
+use IRedis as Redis;
 use App\Models\Hoister;
 use App\Models\HoisterFloor;
 
@@ -10,7 +11,7 @@ class HoisterController extends _Controller
 {
   public function list()
   {
-    return Hoister::select('id', 'name')->orderBy('id')->get();
+    return Hoister::select('id', 'name', 'is_running')->orderBy('id')->get();
   }
 
   public function listAll()
@@ -23,6 +24,8 @@ class HoisterController extends _Controller
   public function deleteHoister()
   {
     $hst = $this->getHoister();
+
+    Redis::publish('system.hoister.accessor', "remove.$hst->id");
     Transaction::begin();
     $hst->delete();
     HoisterFloor::where('hoister_id', $hst->id)->delete();
@@ -44,7 +47,7 @@ class HoisterController extends _Controller
   public function updateHoister()
   {
     $floors = [];
-    $hoister = null;
+    $hst = null;
 
     $data = $this->get('floors', 'array|nullable');
     if ($data) {
@@ -56,21 +59,21 @@ class HoisterController extends _Controller
     }
     $data = $this->get('hoister', 'array|nullable');
     if ($data) {
-      $hoister = $this->getHoister($data['id']);
-      $hoister->fill($data['data']);
+      $hst = $this->getHoister($data['id']);
+      $hst->fill($data['data']);
     }
 
-    if ($floors && $hoister) {
+    if ($floors && $hst) {
       Transaction::begin();
-      $hoister->save();
+      $hst->save();
       foreach ($floors as $floor) $floor->save();
       Transaction::commit();
     } else {
       if ($floors) {
         foreach ($floors as $floor) $floor->save();
       }
-      if ($hoister) {
-        $hoister->save();
+      if ($hst) {
+        $hst->save();
       }
     }
 
@@ -79,19 +82,20 @@ class HoisterController extends _Controller
 
   public function getDetail()
   {
-    return $this->getHoisterWithFloors();
+    return $this->getHoisterDetail();
   }
 
   public function createFloor()
   {
-    $hoister = $this->getHoister();
+    $hst = $this->getHoister();
     $data = $this->get('data', 'array', []);
 
     $floor = new HoisterFloor;
     $floor->fill($data);
-    $floor->hoister_id = $hoister->id;
+    $floor->hoister_id = $hst->id;
     $floor->save();
     $floor = HoisterFloor::find($floor->id);
+
     return $this->success([
       'message' => 'success to create hoister floor',
       'data' => $floor
@@ -106,18 +110,37 @@ class HoisterController extends _Controller
     return $this->success('success to delete hoister floor');
   }
 
-  protected function getHoisterFloor($id = 0): HoisterFloor
+  public function run()
   {
-    if (!$id) {
-      $id = $this->get('floor_id');
+    $hst = $this->getHoister();
+    if ($hst->is_running) {
+      return $this->success('hoister system is already running', 200);
     }
 
-    $floor = HoisterFloor::find($id);
-    if (!$floor) {
-      $this->failure('fail to find hoister floor by id', 404);
+    Redis::publish("system.hoister.accessor","run.$hst->id");
+
+    return $this->success('success to run hoister system');
+  }
+
+  public function stop()
+  {
+    $hst = $this->getHoister();
+    if (!$hst->is_running) {
+      return $this->success('hoister system is not running yet');
     }
 
-    return $floor;
+    Redis::publish("system.hoister.accessor", "stop.$hst->id");
+
+    return $this->success('success to stop hoister system');
+  }
+
+  public function isRunning()
+  {
+    $hst = $this->getHoister();
+
+    return $this->success([
+      'is_running' => $hst->is_running
+    ]);
   }
 
   protected function getHoister($id = 0): Hoister
@@ -134,15 +157,27 @@ class HoisterController extends _Controller
     return $hst;
   }
 
-  protected function getHoisterWithFloors($id = 0): Hoister
+  protected function getHoisterFloor($id = 0): HoisterFloor
+  {
+    if (!$id) {
+      $id = $this->get('floor_id');
+    }
+
+    $floor = HoisterFloor::find($id);
+    if (!$floor) {
+      $this->failure('fail to find hoister floor by id', 404);
+    }
+
+    return $floor;
+  }
+
+  protected function getHoisterDetail($id = 0): Hoister
   {
     if (!$id) {
       $id = $this->get('hoister_id');
     }
 
-    $hst = Hoister::with(['floors' => function ($query) {
-      $query->orderBy('id', 'asc');
-    }])->find($id);
+    $hst = Hoister::with(['floors', 'scanners'])->find($id);
     if (!$hst) {
       $this->failure('fail to find hoister by id', 404);
     }

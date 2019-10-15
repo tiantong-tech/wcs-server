@@ -1,6 +1,6 @@
 <?php
 
-use App\Facades\Series;
+use App\Laravel\Facades\Series;
 use Illuminate\Database\Seeder;
 
 class SeriesSeeder extends Seeder
